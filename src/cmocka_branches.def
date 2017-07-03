@@ -1,0 +1,8 @@
+LIBRARY cmocka_test
+EXPORTS
+    _branch_end
+    _branch_start
+    _function_called
+    _mock
+    _run_test
+    _run_tests
