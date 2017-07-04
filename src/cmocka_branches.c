@@ -649,7 +649,7 @@ int _branch_teardown_wrapper(void **state)
         branch_print_error("Branch path: ");
         branch_print_current_path();
         branch_post_cleanup();
-        return 1;
+        return 0;
     }
 
     if(wrap_state->teardown_func != NULL) {
