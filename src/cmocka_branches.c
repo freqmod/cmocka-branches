@@ -83,9 +83,9 @@
 #define SOURCE_LOCATION_FORMAT "%s:%u"
 
 //void cm_print_error(const char * const format, ...) CMOCKA_PRINTF_ATTRIBUTE(1, 2);
-#define branch_print_error printf
-#define cm_print_error printf
 
+#define branch_print_error print_error
+#define cm_print_error print_error
 
 /* Doubly linked list node. */
 typedef struct ListNode {
