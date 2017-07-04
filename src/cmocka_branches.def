@@ -1,4 +1,4 @@
-LIBRARY cmocka_test
+LIBRARY cmocka_branches
 EXPORTS
     _branch_end
     _branch_start
