@@ -83,7 +83,8 @@ install(
 )
 
 if (WITH_STATIC_LIB)
-    add_library(${CMOCKA_BRANCHES_STATIC_LIBRARY} STATIC ${CMOCKA_BRANCHES_SRCS})
+    message("Staticlib")
+    add_library(${CMOCKA_BRANCHES_STATIC_LIBRARY} STATIC ${CMOCKA_BRANCHES_SRCS} ${CMOCKA_LIBRARIES})
 
     set_target_properties(
         ${CMOCKA_BRANCHES_STATIC_LIBRARY}
@@ -93,7 +94,7 @@ if (WITH_STATIC_LIB)
                 SOVERSION
                     ${LIBRARY_SOVERSION}
                 OUTPUT_NAME
-                    cmockabranches
+                    cmocka_branches
     )
 
     install(
@@ -112,8 +113,10 @@ endif()
 # variable so that the test program can locate its dependent DLL's. First
 # we want to know what directory our dependent DLL was installed into:
 #
-#get_target_property(_cmocka_branches_dir cmocka_branches_shared LOCATION_${CMOCKA_BRANCHES_BUILD_TYPE})
-#get_filename_component(_cmocka_branches_path "${_cmocka_branches_dir}" PATH)
-#file(TO_NATIVE_PATH "${_cmocka_branches_path}" _cmocka_branches_path_native)
-#
-#set(CMOCKA_BRANCHES_DLL_PATH "${_cmocka_branches_path_native}" PARENT_SCOPE)
+get_target_property(_cmocka_branches_dir cmocka_branches_shared LOCATION_${CMOCKA_BRANCHES_BUILD_TYPE})
+get_filename_component(_cmocka_branches_path "${_cmocka_branches_dir}" PATH)
+file(TO_NATIVE_PATH "${_cmocka_branches_path}" _cmocka_branches_dir_path_native)
+file(TO_NATIVE_PATH "${_cmocka_branches_dir}"  _cmocka_branches_path_native)
+
+set(CMOCKA_BRANCHES_DLL_DIR_PATH "${_cmocka_branches_dir_path_native}" PARENT_SCOPE)
+set(CMOCKA_BRANCHES_DLL_PATH "${_cmocka_branches_path_native}" PARENT_SCOPE)

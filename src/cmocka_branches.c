@@ -616,14 +616,14 @@ static void branch_print_current_path( void )
     list_free(&branch_path, NULL, NULL);
 }
 
-static void twigs_post_cleanup(void )
+static void branch_post_cleanup(void )
 {
     list_free(&global_branch_information.trunk.subbranches, free_branch, (void*)0);
     global_branch_information.current_branch = NULL;
     global_branches_enabled = 0;
 }
 
-void twigs_test_wrapper(void **state)
+void _branch_test_wrapper(void **state)
 {
     unsigned int branch_restart_code;
     struct CMBUnitTestWrapper *wrap_state = (struct CMBUnitTestWrapper*)*state;
@@ -634,12 +634,12 @@ void twigs_test_wrapper(void **state)
     do {
         wrap_state->test_func(&initial_state);
     } while((branch_restart_code = branches_restart()) == FORK_RESTART_CODE_RESTART);
-    twigs_post_cleanup();
+    branch_post_cleanup();
 }
 
-int twigs_teardown_wrapper(void **state)
+int _branch_teardown_wrapper(void **state)
 {
-    unsigned int rc = 0, branch_restart_code;
+    unsigned int rc = 0;
     struct CMBUnitTestWrapper *wrap_state = (struct CMBUnitTestWrapper*)*state;
     /* wrap_state is const, so we put the void here in a stack variable in case the test tries to assign to it */
     void *initial_state = wrap_state->initial_inner_state;
@@ -648,7 +648,7 @@ int twigs_teardown_wrapper(void **state)
     if(global_branches_enabled) {
         branch_print_error("Branch path: ");
         branch_print_current_path();
-        twigs_post_cleanup();
+        branch_post_cleanup();
         return 1;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 Google Inc.
+ * Copyright 2017 Nordic semiconductor.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,9 +92,9 @@ enum CMUnitTestStatus {
     CM_TEST_SKIPPED,
 };
 
-void twigs_test_wrapper(void **state);
+void _branch_test_wrapper(void **state);
 
-int twigs_teardown_wrapper(void **state);
+int _branch_teardown_wrapper(void **state);
 
 struct CMBUnitTestWrapper {
     CMUnitTestFunction test_func;
@@ -104,19 +104,19 @@ struct CMBUnitTestWrapper {
 
 
 /** Initializes a CMUnitTest structure. */
-#define cmocka_unit_test_twigs(f) { #f, twigs_test_wrapper, NULL, twigs_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), NULL, NULL }))}
+#define cmocka_unit_test_twigs(f) { #f, _branch_test_wrapper, NULL, _branch_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), NULL, NULL }))}
 
 /** Initializes a CMUnitTest structure with a setup function. */
-#define cmocka_unit_test_setup_twigs(f, setup) { #f, twigs_test_wrapper, setup, twigs_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), NULL, NULL }))}
+#define cmocka_unit_test_setup_twigs(f, setup) { #f, _branch_test_wrapper, setup, _branch_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), NULL, NULL }))}
 
 /** Initializes a CMUnitTest structure with a teardown function. */
-#define cmocka_unit_test_teardown_twigs(f, teardown) { #f, twigs_test_wrapper, NULL, twigs_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), (teardown), NULL }))}
+#define cmocka_unit_test_teardown_twigs(f, teardown) { #f, _branch_test_wrapper, NULL, _branch_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), (teardown), NULL }))}
 
 /**
  * Initialize an array of CMUnitTest structures with a setup function for a test
  * and a teardown function. Either setup or teardown can be NULL.
  */
-#define cmocka_unit_test_setup_teardown_twigs(f, setup, teardown) { #f, twigs_test_wrapper, setup, twigs_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), (teardown), NULL }))}
+#define cmocka_unit_test_setup_teardown_twigs(f, setup, teardown) { #f, _branch_test_wrapper, setup, _branch_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), (teardown), NULL }))}
 
 /**
  * Initialize a CMUnitTest structure with given initial state. It will be passed
@@ -125,7 +125,7 @@ struct CMBUnitTestWrapper {
  * @note If the group setup function initialized the state already, it won't be
  * overridden by the initial state defined here.
  */
-#define cmocka_unit_test_prestate_twigs(f, state) { #f, twigs_test_wrapper, NULL, twigs_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), NULL, NULL }))}
+#define cmocka_unit_test_prestate_twigs(f, state) { #f, _branch_test_wrapper, NULL, _branch_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), NULL, NULL }))}
 
 /**
  * Initialize a CMUnitTest structure with given initial state, setup and
@@ -134,7 +134,7 @@ struct CMBUnitTestWrapper {
  * @note If the group setup function initialized the state already, it won't be
  * overridden by the initial state defined here.
  */
-#define cmocka_unit_test_prestate_setup_teardown_twigs(f, setup, teardown, state) { #f, twigs_test_wrapper, setup, twigs_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), (teardown), state }))}
+#define cmocka_unit_test_prestate_setup_teardown_twigs(f, setup, teardown, state) { #f, _branch_test_wrapper, setup, _branch_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), (teardown), state }))}
 
 
 /** @} */

@@ -56,7 +56,7 @@ add_subdirectory(include)
 add_subdirectory(src)
 
 if (UNIT_TESTING)
-    include(AddCMockaBranchesTest)
+    include(AddCMockaTest)
     add_subdirectory(tests)
 endif (UNIT_TESTING)
 
