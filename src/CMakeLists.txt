@@ -83,7 +83,6 @@ install(
 )
 
 if (WITH_STATIC_LIB)
-    message("Staticlib")
     add_library(${CMOCKA_BRANCHES_STATIC_LIBRARY} STATIC ${CMOCKA_BRANCHES_SRCS} ${CMOCKA_LIBRARIES})
 
     set_target_properties(
