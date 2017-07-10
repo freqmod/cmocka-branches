@@ -58,27 +58,6 @@
 
 /* CMOCKA utils (copied from cmocka.c) */
 
-/**
- * This is a hack to fix warnings. The idea is to use this everywhere that we
- * get the "discarding const" warning by the compiler. That doesn't actually
- * fix the real issue, but marks the place and you can search the code for
- * discard_const.
- *
- * Please use this macro only when there is no other way to fix the warning.
- * We should use this function in only in a very few places.
- *
- * Also, please call this via the discard_const_p() macro interface, as that
- * makes the return type safe.
- */
-#define discard_const(ptr) ((void *)((uintptr_t)(ptr)))
-
-
-/**
- * Type-safe version of discard_const
- */
-#define discard_const_p(type, ptr) ((type *)discard_const(ptr))
-
-
 /* Printf formatting for source code locations. */
 #define SOURCE_LOCATION_FORMAT "%s:%u"
 
@@ -89,7 +68,7 @@
 
 /* Doubly linked list node. */
 typedef struct ListNode {
-    const void *value;
+    void *value;
     int refcount;
     struct ListNode *next;
     struct ListNode *prev;
@@ -98,13 +77,10 @@ typedef struct ListNode {
 /* Used by list_free() to deallocate values referenced by list nodes. */
 typedef void (*CleanupListValue)(const void *value, void *cleanup_value_data);
 
-/* Determines whether two values are the same. */
-typedef int (*EqualityFunction)(const void *left, const void *right);
-
 
 static ListNode* list_initialize(ListNode * const node);
 static ListNode* list_add(ListNode * const head, ListNode *new_node);
-static ListNode* list_add_value(ListNode * const head, const void *value,
+static ListNode* list_add_value(ListNode * const head, void *value,
                                      const int count);
 static ListNode* list_remove(
     ListNode * const node, const CleanupListValue cleanup_value,
@@ -113,9 +89,6 @@ static void list_remove_free(
     ListNode * const node, const CleanupListValue cleanup_value,
     void * const cleanup_value_data);
 static int list_empty(const ListNode * const head);
-static int list_find(
-    ListNode * const head, const void *value,
-    const EqualityFunction equal_func, ListNode **output);
 static int list_first(ListNode * const head, ListNode **output);
 static ListNode* list_free(
     ListNode * const head, const CleanupListValue cleanup_value,
@@ -135,7 +108,7 @@ static ListNode* list_initialize(ListNode * const node) {
  * Adds a value at the tail of a given list.
  * The node referencing the value is allocated from the heap.
  */
-static ListNode* list_add_value(ListNode * const head, const void *value,
+static ListNode* list_add_value(ListNode * const head, void *value,
                                      const int refcount) {
     ListNode * const new_node = (ListNode*)malloc(sizeof(ListNode));
     assert_non_null(head);
@@ -204,23 +177,6 @@ static int list_empty(const ListNode * const head) {
     return head->next == head;
 }
 
-
-/*
- * Find a value in the list using the equal_func to compare each node with the
- * value.
- */
-static int list_find(ListNode * const head, const void *value,
-                     const EqualityFunction equal_func, ListNode **output) {
-    ListNode *current;
-    assert_non_null(head);
-    for (current = head->next; current != head; current = current->next) {
-        if (equal_func(current->value, value)) {
-            *output = current;
-            return 1;
-        }
-    }
-    return 0;
-}
 
 /* Returns the first node of a list */
 static int list_first(ListNode * const head, ListNode **output) {
@@ -402,7 +358,7 @@ unsigned int _branch_start(const char* const name, unsigned int num_twigs, char 
             } else {
                 /* Change to the next sub branch of this twig */
                 global_branch_information.current_twig->current_prev_subbranch = global_branch_information.current_twig->current_prev_subbranch->next;
-                global_branch_information.current_branch = discard_const_p(BranchInformation, global_branch_information.current_twig->current_prev_subbranch->value);
+                global_branch_information.current_branch = (BranchInformation*) global_branch_information.current_twig->current_prev_subbranch->value;
             }
 
             /* Validate that the branch matches the parameters */
@@ -417,7 +373,7 @@ unsigned int _branch_start(const char* const name, unsigned int num_twigs, char 
             }
 
             /* Update global pointers */
-            global_branch_information.current_branch = discard_const_p(BranchInformation, subbranch_information);
+            global_branch_information.current_branch = (BranchInformation*) subbranch_information;
 
             branch_try_mutate();
 
@@ -521,7 +477,7 @@ static BranchRestartCode branches_restart( void )
 
     /* Move to the start of the sub branch list for the top twig */
     global_branch_information.current_twig->current_prev_subbranch = &global_branch_information.current_twig->subbranches; /* Before first subbranch in list */
-    global_branch_information.current_branch = discard_const_p(BranchInformation, global_branch_information.current_twig->current_prev_subbranch->value);
+    global_branch_information.current_branch = (BranchInformation*) global_branch_information.current_twig->current_prev_subbranch->value;
 
     return global_branch_information.prev_mutate_subbranch != NULL ? FORK_RESTART_CODE_RESTART : FORK_RESTART_CODE_COMPLETE;
 }
@@ -590,7 +546,7 @@ static void branch_print_current_path( void )
     unsigned int nesting;
     ListNode branch_path;
     ListNode* current_path_element;
-    const BranchTwig *current_twig = global_branch_information.current_twig;
+    BranchTwig *current_twig = global_branch_information.current_twig;
     list_initialize(&branch_path);
     while(current_twig->parent_branch != NULL) {
         list_add_value(&branch_path, current_twig, 0);
@@ -601,11 +557,11 @@ static void branch_print_current_path( void )
     nesting = 0;
     while(current_path_element != &branch_path) {
         ListNode *current_branch_node;
-        current_twig = (const BranchTwig*)current_path_element->value;
+        current_twig = (BranchTwig*)current_path_element->value;
         current_branch_node = current_twig->parent_branch->parent_twig->subbranches.next;
 
         while(current_branch_node->value != current_twig->parent_branch) {
-            const BranchInformation *branch_info = (const BranchInformation*)current_branch_node->value;
+            BranchInformation *branch_info = (BranchInformation*)current_branch_node->value;
             branch_print_twig_name(&branch_info->twigs[branch_info->current_twig_idx], nesting);
             current_branch_node = current_branch_node->next;
         }
