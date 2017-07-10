@@ -92,29 +92,40 @@ enum CMUnitTestStatus {
     CM_TEST_SKIPPED,
 };
 
+/** Helper functions for wrapping defines below */
 void _branch_test_wrapper(void **state);
 
+/** Helper functions for wrapping defines below */
 int _branch_teardown_wrapper(void **state);
 
+/** Helper struct for wrapping defines below */
 struct CMBUnitTestWrapper {
     CMUnitTestFunction test_func;
     CMFixtureFunction  teardown_func;
     void *initial_inner_state;
 };
 
-
-/** Initializes a CMUnitTest structure. */
+/** Initializes a CMUnitTest structure. 
+  * This version of the function sets up the test to be used with branch_start & branch_end
+  */
 #define cmocka_unit_test_twigs(f) { #f, _branch_test_wrapper, NULL, _branch_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), NULL, NULL }))}
 
-/** Initializes a CMUnitTest structure with a setup function. */
+/** Initializes a CMUnitTest structure with a setup function. 
+  *
+  * This version of the function sets up the test to be used with branch_start & branch_end
+  */
 #define cmocka_unit_test_setup_twigs(f, setup) { #f, _branch_test_wrapper, setup, _branch_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), NULL, NULL }))}
 
-/** Initializes a CMUnitTest structure with a teardown function. */
+/** Initializes a CMUnitTest structure with a teardown function. 
+ *
+ * This version of the function sets up the test to be used with branch_start & branch_end*/
 #define cmocka_unit_test_teardown_twigs(f, teardown) { #f, _branch_test_wrapper, NULL, _branch_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), (teardown), NULL }))}
 
 /**
  * Initialize an array of CMUnitTest structures with a setup function for a test
  * and a teardown function. Either setup or teardown can be NULL.
+ *
+ * This version of the function sets up the test to be used with branch_start & branch_end
  */
 #define cmocka_unit_test_setup_teardown_twigs(f, setup, teardown) { #f, _branch_test_wrapper, setup, _branch_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), (teardown), NULL }))}
 
@@ -124,6 +135,8 @@ struct CMBUnitTestWrapper {
  * not need special initialization or was initialized already.
  * @note If the group setup function initialized the state already, it won't be
  * overridden by the initial state defined here.
+ *
+ * This version of the function sets up the test to be used with branch_start & branch_end
  */
 #define cmocka_unit_test_prestate_twigs(f, state) { #f, _branch_test_wrapper, NULL, _branch_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), NULL, NULL }))}
 
@@ -133,9 +146,36 @@ struct CMBUnitTestWrapper {
  * later to setup function, or directly to test if none was given.
  * @note If the group setup function initialized the state already, it won't be
  * overridden by the initial state defined here.
+ *
+ * This version of the function sets up the test to be used with branch_start & branch_end
  */
 #define cmocka_unit_test_prestate_setup_teardown_twigs(f, setup, teardown, state) { #f, _branch_test_wrapper, setup, _branch_teardown_wrapper, (void*) (&((const struct CMBUnitTestWrapper){ (f), (teardown), state }))}
 
+/* API for use without the CMOCKA test runner */
+
+/* Type used for inner functions that support branches. */
+typedef void (*BranchInnerFunction)(void *state);
+
+
+/**
+ * Wrap a custom function for use with branches. This function should be used to wrap any function that calls branch_start and branch_end (when not using cmocka).
+ * The wrapped function will be called repetitively until all branch combinations are executed.
+ * This function cannot be used recursively.
+
+ * @param State: Forwarded to the inner func - function.
+ */
+
+void _branch_custom_func_wrapper(BranchInnerFunction func, void *state);
+
+#define branch_custom_func_wrapper(func, state) (_branch_custom_func_wrapper(func,state))
+
+/*
+ * This function prints the current path for branches that are executing.
+   This function is primarily intended for error handling to report in which branch combination an error occurred.
+ */
+void _branch_print_current_path( void );
+
+#define branch_print_current_path() (_branch_print_current_path());
 
 /** @} */
 

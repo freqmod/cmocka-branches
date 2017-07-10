@@ -265,7 +265,7 @@ typedef struct
 static CMOCKA_THREAD BranchesInformation global_branch_information;
 static CMOCKA_THREAD int global_branches_enabled = 0;
 
-/* Functions */
+/* -------------------------- Functions -------------------------- */
 
 static int branch_info_equal(BranchInformation const * const subbranch_information, const char* const name, const unsigned int num_twigs, const char* const file, const unsigned int line, const char* const function_name)
 {
@@ -541,7 +541,7 @@ static void branch_print_twig_name(const BranchTwig *twig, unsigned int nesting)
     }
 }
 
-static void branch_print_current_path( void )
+void _branch_print_current_path( void )
 {
     unsigned int nesting;
     ListNode branch_path;
@@ -572,25 +572,29 @@ static void branch_print_current_path( void )
     list_free(&branch_path, NULL, NULL);
 }
 
-static void branch_post_cleanup(void )
+static void branch_post_cleanup(void)
 {
     list_free(&global_branch_information.trunk.subbranches, free_branch, (void*)0);
     global_branch_information.current_branch = NULL;
     global_branches_enabled = 0;
 }
 
-void _branch_test_wrapper(void **state)
+void _branch_custom_func_wrapper(BranchInnerFunction func, void *state)
 {
     unsigned int branch_restart_code;
+    branches_init();
+    do {
+        func(state);
+    } while((branch_restart_code = branches_restart()) == FORK_RESTART_CODE_RESTART);
+    branch_post_cleanup();
+}
+
+void _branch_test_wrapper(void **state)
+{
     struct CMBUnitTestWrapper *wrap_state = (struct CMBUnitTestWrapper*)*state;
     /* wrap_state is const, so we put the void here in a stack variable in case the test tries to assign to it */
     void *initial_state = wrap_state->initial_inner_state;
-
-    branches_init();
-    do {
-        wrap_state->test_func(&initial_state);
-    } while((branch_restart_code = branches_restart()) == FORK_RESTART_CODE_RESTART);
-    branch_post_cleanup();
+    _branch_custom_func_wrapper((BranchInnerFunction)(wrap_state->test_func), (void*)&initial_state);
 }
 
 int _branch_teardown_wrapper(void **state)
@@ -603,7 +607,7 @@ int _branch_teardown_wrapper(void **state)
     /* If global_branches_enabled we did not exit cleanly, print the current branch for tracing errors */
     if(global_branches_enabled) {
         branch_print_error("Branch path: ");
-        branch_print_current_path();
+        _branch_print_current_path();
         branch_post_cleanup();
         return 0;
     }
@@ -614,3 +618,4 @@ int _branch_teardown_wrapper(void **state)
 
     return rc;
 }
+
