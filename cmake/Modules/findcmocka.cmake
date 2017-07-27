@@ -10,6 +10,8 @@
 #  CMOCKA_DEFINITIONS - Compiler switches required for using CMocka
 
 set(_CMOCKA_ROOT_HINTS
+         /usr/local/lib/
+         /usr/lib/
 )
 
 set(_CMOCKA_ROOT_PATHS

@@ -89,7 +89,6 @@ static void list_remove_free(
     ListNode * const node, const CleanupListValue cleanup_value,
     void * const cleanup_value_data);
 static int list_empty(const ListNode * const head);
-static int list_first(ListNode * const head, ListNode **output);
 static ListNode* list_free(
     ListNode * const head, const CleanupListValue cleanup_value,
     void * const cleanup_value_data);
@@ -177,26 +176,6 @@ static int list_empty(const ListNode * const head) {
     return head->next == head;
 }
 
-
-/* Returns the first node of a list */
-static int list_first(ListNode * const head, ListNode **output) {
-    ListNode *target_node;
-    assert_non_null(head);
-    if (list_empty(head)) {
-        return 0;
-    }
-    target_node = head->next;
-    *output = target_node;
-    return 1;
-}
-
-
-/* Deallocate a value referenced by a list. */
-static void free_value(const void *value, void *cleanup_value_data) {
-    (void)cleanup_value_data;
-    assert_non_null(value);
-    free((void*)value);
-}
 
 /*****************************************************************************/
 /**** Branch related code                                                    ***/
